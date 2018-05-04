@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+
+# Mein Zeug
+./build-*
+*.pro.user
+*~lock.*.odt#
