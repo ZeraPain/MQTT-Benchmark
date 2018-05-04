@@ -36,3 +36,6 @@
 ./build-*
 *.pro.user
 *~lock.*.odt#
+/.vs
+/applications/MeasurementTool/.vs/MeasurementTool/v15
+/applications/MeasurementTool/Debug
