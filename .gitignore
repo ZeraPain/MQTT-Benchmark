@@ -39,3 +39,4 @@ build-*
 /.vs
 /applications/MeasurementTool/.vs/MeasurementTool/v15
 /applications/MeasurementTool/Debug
+*.log
