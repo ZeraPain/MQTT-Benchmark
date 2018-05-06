@@ -33,6 +33,6 @@
 
 
 # Mein Zeug
-./build-*
+build-*
 *.pro.user
 *~lock.*.odt#
