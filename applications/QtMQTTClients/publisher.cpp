@@ -120,8 +120,10 @@ void Publisher::calcPublish()
             m_messageSize *= 10;
 
         // Quit application if publishTimeout is higher than 1000
-        if(m_publishTimeout > 1000)
-            qApp->quit();
+        if(m_publishTimeout > 1000){
+            m_publishTimer.stop();
+            qDebug() << m_name << "stopped";
+        }
 
         qDebug() << m_name << "Message size set to" << m_messageSize;
     }
