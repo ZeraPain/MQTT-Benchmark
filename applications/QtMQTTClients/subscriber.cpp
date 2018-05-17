@@ -67,5 +67,36 @@ void Subscriber::stateChanged(QMqttClient::ClientState state)
 void Subscriber::errorChanged(QMqttClient::ClientError error)
 {
     qDebug() << "Error changed";
+    switch(error){
+    // Protocol states
+    case QMqttClient::ClientError::NoError:
+        qDebug() << "No error";
+        break;
+    case QMqttClient::ClientError::InvalidProtocolVersion:
+        qDebug() << "Invalid protocol version";
+        break;
+    case QMqttClient::ClientError::IdRejected:
+        qDebug() << "Id rejected";
+        break;
+    case QMqttClient::ClientError::ServerUnavailable:
+        qDebug() << "Server unavailable";
+        break;
+    case QMqttClient::ClientError::BadUsernameOrPassword:
+        qDebug() << "Bad username or password";
+        break;
+    case QMqttClient::ClientError::NotAuthorized:
+        qDebug() << "Not authorized";
+        break;
+        // Qt states
+    case QMqttClient::ClientError::TransportInvalid:
+        qDebug() << "Transport invalid";
+        break;
+    case QMqttClient::ClientError::ProtocolViolation:
+        qDebug() << "Protocol violation";
+        break;
+    case QMqttClient::ClientError::UnknownError:
+        qDebug() << "Unknown error";
+        break;
+    }
 }
 

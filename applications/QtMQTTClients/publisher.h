@@ -16,11 +16,14 @@ public slots:
     void errorChanged(QMqttClient::ClientError error);
 
 private:
+    void calcPublish();
+
     QScopedPointer<QMqttClient> m_client;
     QTimer m_publishTimer;
 
     qint32 m_messageSize;
     qint32 m_publishTimeout;
+    qint32 m_publishCounter;
 };
 
 #endif // PUBLISHER_H
