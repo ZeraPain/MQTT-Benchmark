@@ -3,7 +3,7 @@
 
 #include <QtMqtt>
 
-class Subscriber : public QMqttClient
+class Subscriber : public QObject
 {
     Q_OBJECT
 public:
@@ -13,8 +13,11 @@ public:
 
 private slots:
     void printMessage(const QByteArray &message, const QMqttTopicName &topic);
-    void stateChanged(ClientState state);
-    void errorChanged(ClientError error);
+    void stateChanged(QMqttClient::ClientState state);
+    void errorChanged(QMqttClient::ClientError error);
+
+private:
+    QScopedPointer<QMqttClient> m_client;
 };
 
 #endif // SUBSCRIBER_H

@@ -9,16 +9,18 @@ class Publisher : public QObject
 public:
     explicit Publisher(QObject *parent);
 
-    void sendMessage(int bytes);
-    void connectMQTT();
-    QIODevice *transport() const;
-public slots:
+    void sendMessage();
 
+public slots:
     void stateChanged(QMqttClient::ClientState state);
     void errorChanged(QMqttClient::ClientError error);
 
 private:
     QScopedPointer<QMqttClient> m_client;
+    QTimer m_publishTimer;
+
+    qint32 m_messageSize;
+    qint32 m_publishTimeout;
 };
 
 #endif // PUBLISHER_H

@@ -3,33 +3,29 @@
 #include <QDebug>
 
 Subscriber::Subscriber(QObject *parent)
-    : QMqttClient{parent}
+    : QObject{parent}
+    , m_client{new QMqttClient{this}}
 {
-    //setHostname("fe80::83ca:204d:3c0a:5a58");
-    setHostname("192.168.56.1");
-    setPort(2222);
+    m_client->setHostname("127.0.0.1");
+    m_client->setPort(2222);
 
-    qDebug() << "Client Id" << clientId();
-
-    connect(this, &QMqttClient::stateChanged, this, &Subscriber::stateChanged);
-    connect(this, &QMqttClient::errorChanged, this, &Subscriber::errorChanged);
-    connect(this, &QMqttClient::messageReceived, this, &Subscriber::printMessage);
-    connect(this, &QMqttClient::pingResponseReceived, this, [this]() {
+    connect(m_client.data(), &QMqttClient::stateChanged, this, &Subscriber::stateChanged);
+    connect(m_client.data(), &QMqttClient::errorChanged, this, &Subscriber::errorChanged);
+    connect(m_client.data(), &QMqttClient::messageReceived, this, &Subscriber::printMessage);
+    connect(m_client.data(), &QMqttClient::pingResponseReceived, this, [this]() {
             const QString content = QDateTime::currentDateTime().toString()
                         + QLatin1String(" PingResponse")
                         + QLatin1Char('\n');
             qDebug() << content;
         });
-    requestPing();
-    qDebug() << "Ping requested";
-
-    connectToHost();
     qDebug() << "Client Created";
+
+    m_client->connectToHost();
 }
 
 void Subscriber::listenToTopic(const QString &topic)
 {
-    auto subscription = subscribe(topic);
+    auto subscription = m_client->subscribe(topic);
     if (!subscription) {
         qDebug() << Q_FUNC_INFO << "Subscription Fehlgeschlagen";
         return;
@@ -52,14 +48,14 @@ void Subscriber::stateChanged(QMqttClient::ClientState state)
 {
     qDebug() << "Client state changed";
     switch (state) {
-        case ClientState::Connected:
+        case QMqttClient::ClientState::Connected:
             qDebug() << "Client connected";
             listenToTopic("test/test");
         break;
-        case ClientState::Connecting:
+        case QMqttClient::ClientState::Connecting:
             qDebug() << "Client connecting";
         break;
-        case ClientState::Disconnected:
+        case QMqttClient::ClientState::Disconnected:
             qDebug() << "Client disconnected";
         break;
         default:

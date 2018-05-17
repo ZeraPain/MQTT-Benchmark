@@ -10,11 +10,12 @@ int main(int argc, char *argv[])
 
     if(argc != 1){
         qDebug() << "Subscribe";
-        Subscriber sub{&a};
+        Subscriber *sub = new Subscriber(&a);
+        Q_UNUSED(sub)
     } else {
         qDebug() << "Publish";
-        Publisher pub{&a};
-        pub.connectMQTT();
+        Publisher *pub = new Publisher{&a};
+        Q_UNUSED(pub)
     }
     return a.exec();
 }
