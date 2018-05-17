@@ -1,4 +1,5 @@
 #include <QCoreApplication>
+#include <QDebug>
 
 #include "publisher.h"
 #include "subscriber.h"
@@ -13,7 +14,7 @@ int main(int argc, char *argv[])
     } else {
         qDebug() << "Publish";
         Publisher pub{&a};
+        pub.connectMQTT();
     }
     return a.exec();
 }
-

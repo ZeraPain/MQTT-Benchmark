@@ -6,9 +6,9 @@ Publisher::Publisher(QObject *parent)
     : QObject{parent}
     , m_client(new QMqttClient{})
 {
-    m_client->setHostname("127.0.0.1");
-    m_client->setPort(12345);
-
+    m_client->setHostname("broker.hivemq.com");
+    m_client->setPort(1883);
+    m_client->setProtocolVersion(QMqttClient::ProtocolVersion::MQTT_3_1);
     qDebug() << "Client Id" << m_client->clientId();
 
     connect(m_client.data(), &QMqttClient::stateChanged, this, &Publisher::stateChanged);
@@ -19,10 +19,10 @@ Publisher::Publisher(QObject *parent)
                         + QLatin1Char('\n');
             qDebug() << content;
         });
-    m_client->requestPing();
+
+   // m_client->requestPing();
     qDebug() << "Ping requested";
 
-    m_client->connectToHost();
     qDebug() << "Client Created";
 }
 
@@ -30,6 +30,16 @@ void Publisher::sendMessage(int bytes)
 {
     qDebug() << "messge send";
     m_client->publish(QString{"test/test"}, QByteArray{"test"});
+}
+
+void Publisher::connectMQTT()
+{
+    m_client->connectToHost();
+}
+
+QIODevice* Publisher::transport() const
+{
+    return m_client->transport();
 }
 
 void Publisher::stateChanged(QMqttClient::ClientState state)

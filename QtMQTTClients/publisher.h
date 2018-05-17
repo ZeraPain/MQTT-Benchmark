@@ -10,6 +10,10 @@ public:
     explicit Publisher(QObject *parent);
 
     void sendMessage(int bytes);
+    void connectMQTT();
+    QIODevice *transport() const;
+public slots:
+
     void stateChanged(QMqttClient::ClientState state);
     void errorChanged(QMqttClient::ClientError error);
 
