@@ -7,7 +7,7 @@ class Publisher : public QObject
 {
     Q_OBJECT
 public:
-    explicit Publisher(QObject *parent);
+    explicit Publisher(const QString &name, QObject *parent);
 
     void sendMessage();
 
@@ -24,6 +24,7 @@ private:
     qint32 m_messageSize;
     qint32 m_publishTimeout;
     qint32 m_publishCounter;
+    QString m_name;
 };
 
 #endif // PUBLISHER_H

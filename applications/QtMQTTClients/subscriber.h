@@ -7,7 +7,7 @@ class Subscriber : public QObject
 {
     Q_OBJECT
 public:
-    explicit Subscriber(QObject *parent);
+    explicit Subscriber(const QString &name, QObject *parent);
 
     void listenToTopic(const QString &topic);
 
@@ -18,6 +18,7 @@ private slots:
 
 private:
     QScopedPointer<QMqttClient> m_client;
+    QString m_name;
 };
 
 #endif // SUBSCRIBER_H

@@ -2,13 +2,14 @@
 
 #include <QDebug>
 
-Publisher::Publisher(QObject *parent)
+Publisher::Publisher(const QString &name, QObject *parent)
     : QObject{parent}
     , m_client(new QMqttClient{this})
     , m_publishTimer{}
     , m_messageSize{0}
     , m_publishTimeout{10}
     , m_publishCounter{0}
+    , m_name{name}
 {
     m_publishTimer.setSingleShot(true);
     m_client->setHostname("localhost");
@@ -35,6 +36,7 @@ void Publisher::sendMessage()
 
     QByteArray data;
     data.resize(m_messageSize);
+    data.fill('c');
 
     m_client->publish(QString{"test"}, data);
     m_publishTimer.start(m_publishTimeout);
@@ -45,18 +47,18 @@ void Publisher::stateChanged(QMqttClient::ClientState state)
     qDebug() << "Client state changed";
     switch (state) {
     case QMqttClient::ClientState::Connected:
-        qDebug() << "Client connected";
+        qDebug() << m_name <<  "connected";
         m_publishTimer.start(m_publishTimeout);
         break;
     case QMqttClient::ClientState::Connecting:
-        qDebug() << "Client connecting";
+        qDebug() << m_name <<  "connecting";
         break;
     case QMqttClient::ClientState::Disconnected:
-        qDebug() << "Client disconnected";
+        qDebug() << m_name <<  "disconnected";
         m_publishTimer.stop();
         break;
     default:
-        qDebug() << "Unhandelt state";
+        qDebug() << m_name <<  "Unhandelt state";
         return;
     }
 }
@@ -106,7 +108,7 @@ void Publisher::calcPublish()
         if(m_messageSize == 10000000){
             m_publishTimeout *= 10;
             m_messageSize = 0;
-            qDebug() << "Publish timeout set to:" << m_publishTimeout;
+            qDebug() << m_name << "Publish timeout set to:" << m_publishTimeout;
         }
         else if(m_messageSize == 0)
             m_messageSize = 1;
@@ -121,7 +123,7 @@ void Publisher::calcPublish()
         if(m_publishTimeout > 1000)
             qApp->quit();
 
-        qDebug() << "Message size set to" << m_messageSize;
+        qDebug() << m_name << "Message size set to" << m_messageSize;
     }
     m_publishCounter++;
 }
