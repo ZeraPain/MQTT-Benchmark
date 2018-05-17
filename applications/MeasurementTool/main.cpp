@@ -3,6 +3,8 @@
 #include <TlHelp32.h>
 #include <string>
 #include <iostream>
+#include <fstream>
+#include <ctime>
 
 DWORD getProcessId(const std::string& aProcessName)
 {
@@ -29,6 +31,29 @@ DWORD getProcessId(const std::string& aProcessName)
 	}
 
 	return processId;
+}
+
+std::string getTimeStamp()
+{
+	time_t rawtime;
+	struct tm timeinfo{};
+	char buffer[80];
+	
+	time(&rawtime);
+	localtime_s(&timeinfo, &rawtime);
+
+	strftime(buffer, sizeof(buffer), "%d-%m-%Y %I:%M:%S", &timeinfo);
+	return std::string(buffer);
+}
+
+void writeLogFile(const std::string& aProcessName, double aCpuPercentage, size_t aRamValue)
+{
+	std::ofstream fileStream;
+	if (!fileStream.is_open())
+	{
+		fileStream.open(aProcessName + ".log", std::ios_base::app);
+	}
+	fileStream << getTimeStamp() << ";" << aCpuPercentage << ";" << aRamValue << "\n";
 }
 
 int main()
@@ -71,7 +96,7 @@ int main()
 			Sleep(measureInterval);
 
 			GetProcessMemoryInfo(processHandle, reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc), sizeof(pmc));
-			const SIZE_T virtualMemUsedByMe = pmc.PrivateUsage / 1024 / 1024;
+			const auto virtualMemUsedByMe = pmc.PrivateUsage;
 			//SIZE_T workingSetSize = pmc.WorkingSetSize;
 
 			ULARGE_INTEGER now, sys, user;
@@ -92,7 +117,8 @@ int main()
 			lastSysCPU = sys;
 
 			GetExitCodeProcess(processHandle, &exitCode);
-			std::cout << "CPU: " << percent << "% \t RAM: " << virtualMemUsedByMe << "MB" <<  std::endl;
+			std::cout << "CPU: " << percent << "% \t RAM: " << virtualMemUsedByMe / 1024 / 1024  << "MB" <<  std::endl;
+			writeLogFile(processName, percent, virtualMemUsedByMe);
 		} while (0 != exitCode);
 
 		CloseHandle(processHandle);
