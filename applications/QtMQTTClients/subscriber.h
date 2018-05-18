@@ -9,6 +9,8 @@ class Subscriber : public QObject
 public:
     explicit Subscriber(const QString &name, QObject *parent);
 
+    virtual ~Subscriber();
+
     void listenToTopic(const QString &topic);
 
 private slots:

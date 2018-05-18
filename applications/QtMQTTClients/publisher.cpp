@@ -13,7 +13,7 @@ Publisher::Publisher(const QString &name, QObject *parent)
 {
     m_publishTimer.setSingleShot(true);
     m_client->setHostname("localhost");
-    m_client->setPort(2222);
+    m_client->setPort(1883);
 
     connect(m_client.data(), &QMqttClient::stateChanged, this, &Publisher::stateChanged);
     connect(m_client.data(), &QMqttClient::errorChanged, this, &Publisher::errorChanged);
@@ -30,9 +30,15 @@ Publisher::Publisher(const QString &name, QObject *parent)
     m_client->connectToHost();
 }
 
+Publisher::~Publisher()
+{
+    m_client->disconnectFromHost();
+}
+
 void Publisher::sendMessage()
 {
-    calcPublish();
+    if(calcPublish())
+        return;
 
     QByteArray data;
     data.resize(m_messageSize);
@@ -99,7 +105,7 @@ void Publisher::errorChanged(QMqttClient::ClientError error)
     }
 }
 
-void Publisher::calcPublish()
+bool Publisher::calcPublish()
 {
     if(m_publishCounter == 10){
         m_publishCounter = 0;
@@ -123,11 +129,13 @@ void Publisher::calcPublish()
         if(m_publishTimeout > 1000){
             m_publishTimer.stop();
             qDebug() << m_name << "stopped";
+            return true;
         }
 
         qDebug() << m_name << "Message size set to" << m_messageSize;
     }
     m_publishCounter++;
+    return false;
 }
 
 

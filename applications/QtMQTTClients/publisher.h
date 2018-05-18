@@ -9,6 +9,8 @@ class Publisher : public QObject
 public:
     explicit Publisher(const QString &name, QObject *parent);
 
+    virtual ~Publisher();
+
     void sendMessage();
 
 public slots:
@@ -16,7 +18,7 @@ public slots:
     void errorChanged(QMqttClient::ClientError error);
 
 private:
-    void calcPublish();
+    bool calcPublish();
 
     QScopedPointer<QMqttClient> m_client;
     QTimer m_publishTimer;

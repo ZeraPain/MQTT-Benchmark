@@ -8,7 +8,7 @@ Subscriber::Subscriber(const QString &name, QObject *parent)
     , m_name{name}
 {
     m_client->setHostname("127.0.0.1");
-    m_client->setPort(2222);
+    m_client->setPort(1883);
 
     connect(m_client.data(), &QMqttClient::stateChanged, this, &Subscriber::stateChanged);
     connect(m_client.data(), &QMqttClient::errorChanged, this, &Subscriber::errorChanged);
@@ -22,6 +22,11 @@ Subscriber::Subscriber(const QString &name, QObject *parent)
     qDebug() << "Client Created";
 
     m_client->connectToHost();
+}
+
+Subscriber::~Subscriber()
+{
+    m_client->disconnectFromHost();
 }
 
 void Subscriber::listenToTopic(const QString &topic)
