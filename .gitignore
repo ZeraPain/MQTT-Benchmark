@@ -40,3 +40,5 @@ build-*
 /applications/MeasurementTool/.vs/MeasurementTool/v15
 /applications/MeasurementTool/Debug
 *.log
+/applications/CSharpMQTTClients/.vs/CSharpMQTTClients/v15
+/applications/CSharpMQTTClients/CSharpMQTTClients/obj/Debug
