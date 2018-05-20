@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using uPLibrary.Networking.M2Mqtt.Messages;
 
 namespace uPLibrary.Networking.M2Mqtt
@@ -35,7 +36,11 @@ namespace uPLibrary.Networking.M2Mqtt
             };
  
             // publish a message on "/home/temperature" topic with QoS 2 
-            client.Publish("/home/temperature", sendBytes, MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false); 
+            while (true)
+            {
+                client.Publish("/home/temperature", sendBytes, MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
+                Thread.Sleep(10);
+            }
         }
 
         private static void Subscriber()
@@ -58,7 +63,7 @@ namespace uPLibrary.Networking.M2Mqtt
         private static void client_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e) 
         { 
             // handle message received 
-            Console.WriteLine("Received message");
+            //Console.WriteLine("Received message");
         } 
     }
 }

@@ -43,3 +43,5 @@ build-*
 /applications/CSharpMQTTClients/.vs/CSharpMQTTClients/v15
 /applications/CSharpMQTTClients/CSharpMQTTClients/obj/Debug
 /applications/CSharpMQTTClients/bin/Debug
+/applications/CSharpMQTTClients/bin/Release/M2Mqtt.Net
+/applications/CSharpMQTTClients/CSharpMQTTClients/obj/Release

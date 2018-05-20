@@ -1,5 +1,5 @@
 #include <Windows.h>
-#include "psapi.h"
+#include "Psapi.h"
 #include <TlHelp32.h>
 #include <string>
 #include <iostream>
@@ -56,78 +56,92 @@ void writeLogFile(const std::string& aProcessName, double aCpuPercentage, size_t
 	fileStream << getTimeStamp() << ";" << aCpuPercentage << ";" << aRamValue << "\n";
 }
 
-int main()
+int main(int argc, char* argv[])
 {
+	if (argc < 3) {
+		// Tell the user how to run the program
+		std::cerr << "Usage: " << argv[0] << " <processname> <delay>" << std::endl;
+		/* "Usage messages" are a conventional way of telling the user
+		* how to run a program if they enter the command incorrectly.
+		*/
+		return 1;
+	}
+
 	// user defined values
-	const std::string processName = "ts3client_win64.exe";
-	const auto measureInterval = 1000;
+	const std::string processName = argv[1];
+	const auto measureInterval = atoi(argv[2]);
 
 	// program code
-	const auto processId = getProcessId(processName);
-	if (processId > 0)
+	int processId;
+
+	std::cout << "Searching for process... ";
+
+	do
 	{
-		const auto processHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, processId);
+		processId = getProcessId(processName);
+	} while (0 == processId);
 
-		// setup memory info
-		PROCESS_MEMORY_COUNTERS_EX pmc;
-		ZeroMemory(&pmc, sizeof(PROCESS_MEMORY_COUNTERS_EX));
+	std::cout << "found! Process ID [" << processId << "]" << std::endl;
 
-		// setup cpu info
-		ULARGE_INTEGER lastCPU, lastSysCPU, lastUserCPU;
+	const auto processHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, processId);
 
-		SYSTEM_INFO sysInfo;
-		FILETIME ftime, fsys, fuser;
+	// setup memory info
+	PROCESS_MEMORY_COUNTERS_EX pmc;
+	ZeroMemory(&pmc, sizeof(PROCESS_MEMORY_COUNTERS_EX));
 
-		GetSystemInfo(&sysInfo);
-		const int numProcessors = sysInfo.dwNumberOfProcessors;
+	// setup cpu info
+	ULARGE_INTEGER lastCPU, lastSysCPU, lastUserCPU;
+
+	SYSTEM_INFO sysInfo;
+	FILETIME ftime, fsys, fuser;
+
+	GetSystemInfo(&sysInfo);
+	const int numProcessors = sysInfo.dwNumberOfProcessors;
+
+	GetSystemTimeAsFileTime(&ftime);
+	memcpy(&lastCPU, &ftime, sizeof(FILETIME));
+
+	GetProcessTimes(processHandle, &ftime, &ftime, &fsys, &fuser);
+	memcpy(&lastSysCPU, &fsys, sizeof(FILETIME));
+	memcpy(&lastUserCPU, &fuser, sizeof(FILETIME));
+
+	DWORD exitCode;
+
+	std::cout << "Printing resource values of [" << processName << "] PID: " << processId << std::endl;
+	do
+	{
+		Sleep(measureInterval);
+
+		GetProcessMemoryInfo(processHandle, reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc), sizeof(pmc));
+		const auto virtualMemUsedByMe = pmc.PrivateUsage;
+		//SIZE_T workingSetSize = pmc.WorkingSetSize;
+
+		ULARGE_INTEGER now, sys, user;
 
 		GetSystemTimeAsFileTime(&ftime);
-		memcpy(&lastCPU, &ftime, sizeof(FILETIME));
+		memcpy(&now, &ftime, sizeof(FILETIME));
 
 		GetProcessTimes(processHandle, &ftime, &ftime, &fsys, &fuser);
-		memcpy(&lastSysCPU, &fsys, sizeof(FILETIME));
-		memcpy(&lastUserCPU, &fuser, sizeof(FILETIME));
+		memcpy(&sys, &fsys, sizeof(FILETIME));
+		memcpy(&user, &fuser, sizeof(FILETIME));
+		double percent = (sys.QuadPart - lastSysCPU.QuadPart) +
+			(user.QuadPart - lastUserCPU.QuadPart);
+		percent /= (now.QuadPart - lastCPU.QuadPart);
+		percent /= numProcessors;
+		percent *= 100;
+		lastCPU = now;
+		lastUserCPU = user;
+		lastSysCPU = sys;
 
-		DWORD exitCode;
+		GetExitCodeProcess(processHandle, &exitCode);
+		std::cout << "CPU: " << percent << "% \t RAM: " << virtualMemUsedByMe / 1024 / 1024 << "MB" << std::endl;
+		writeLogFile(processName, percent, virtualMemUsedByMe);
+	} while (STILL_ACTIVE == exitCode);
 
-		std::cout << "Printing resource values of [" << processName << "] PID: " << processId << std::endl;
-		do
-		{
-			Sleep(measureInterval);
+	CloseHandle(processHandle);
 
-			GetProcessMemoryInfo(processHandle, reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc), sizeof(pmc));
-			const auto virtualMemUsedByMe = pmc.PrivateUsage;
-			//SIZE_T workingSetSize = pmc.WorkingSetSize;
-
-			ULARGE_INTEGER now, sys, user;
-
-			GetSystemTimeAsFileTime(&ftime);
-			memcpy(&now, &ftime, sizeof(FILETIME));
-
-			GetProcessTimes(processHandle, &ftime, &ftime, &fsys, &fuser);
-			memcpy(&sys, &fsys, sizeof(FILETIME));
-			memcpy(&user, &fuser, sizeof(FILETIME));
-			double percent = (sys.QuadPart - lastSysCPU.QuadPart) +
-				(user.QuadPart - lastUserCPU.QuadPart);
-			percent /= (now.QuadPart - lastCPU.QuadPart);
-			percent /= numProcessors;
-			percent *= 100;
-			lastCPU = now;
-			lastUserCPU = user;
-			lastSysCPU = sys;
-
-			GetExitCodeProcess(processHandle, &exitCode);
-			std::cout << "CPU: " << percent << "% \t RAM: " << virtualMemUsedByMe / 1024 / 1024  << "MB" <<  std::endl;
-			writeLogFile(processName, percent, virtualMemUsedByMe);
-		} while (0 != exitCode);
-
-		CloseHandle(processHandle);
-	}
-	else
-	{
-		std::cout << "Unable to find process" << std::endl;
-		system("PAUSE");
-	}
+	std::cout << "Process terminated! Stopping measurements." << std::endl;
+	system("PAUSE");
 
 	return 0;
 }
