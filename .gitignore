@@ -42,3 +42,4 @@ build-*
 *.log
 /applications/CSharpMQTTClients/.vs/CSharpMQTTClients/v15
 /applications/CSharpMQTTClients/CSharpMQTTClients/obj/Debug
+/applications/CSharpMQTTClients/bin/Debug
