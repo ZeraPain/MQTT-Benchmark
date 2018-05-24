@@ -30,14 +30,10 @@ namespace uPLibrary.Networking.M2Mqtt
             var clientId = Guid.NewGuid().ToString(); 
             client.Connect(clientId);
 
-            byte[] sendBytes =
-            {
-                0x00, 0x01
-            };
- 
             // publish a message on "/home/temperature" topic with QoS 2 
             while (true)
             {
+                var sendBytes = new byte[100000];
                 client.Publish("/home/temperature", sendBytes, MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
                 Thread.Sleep(10);
             }
