@@ -6,7 +6,6 @@
 
 #define ADDRESS     "tcp://192.168.178.37:1883"
 #define TOPIC       "MQTT Examples"
-#define PAYLOAD     "Hello World!"
 #define QOS         0
 #define TIMEOUT     10000L
 
@@ -68,14 +67,16 @@
 	}
 }*/
 
-void publish(MQTTClient* client, int qos, int delay)
+void publish(MQTTClient* client, int qos, int payloadLen, int delay)
 {
 	while (1)
 	{
 		MQTTClient_deliveryToken token;
 		MQTTClient_message pubmsg = MQTTClient_message_initializer;
-		pubmsg.payload = PAYLOAD;
-		pubmsg.payloadlen = strlen(PAYLOAD);
+
+		void* mem = malloc(payloadLen);
+		pubmsg.payload = mem;
+		pubmsg.payloadlen = payloadLen;
 		pubmsg.qos = qos;
 		pubmsg.retained = 0;
 
@@ -93,6 +94,8 @@ void publish(MQTTClient* client, int qos, int delay)
 				printf("MQTTClient_waitForCompletion failed\n");
 			}
 		}
+
+		free(mem);
 
 		Sleep(delay);
 	}
@@ -137,12 +140,12 @@ int main(int argc, char* argv[])
 
 	if (argc < 3)
 	{
-		printf("Publish: %s <pub> <clientid> <delay>\n", argv[0]);
+		printf("Publish: %s <pub> <clientid> <payloadLen> <delay>\n", argv[0]);
 		printf("Subscribe: %s <sub> <clientid>\n", argv[0]);
 		return -1;
 	}
 
-	if (0 == strcmp(argv[1], "pub") && 4 == argc)
+	if (0 == strcmp(argv[1], "pub") && 5 == argc)
 	{
 		publisher = TRUE;
 	}
@@ -152,7 +155,7 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
-		printf("Publish: %s <pub> <clientid> <delay>\n", argv[0]);
+		printf("Publish: %s <pub> <clientid> <payloadLen> <delay>\n", argv[0]);
 		printf("Subscribe: %s <sub> <clientid>\n", argv[0]);
 		return -1;
 	}
@@ -173,7 +176,7 @@ int main(int argc, char* argv[])
 
 	if (publisher)
 	{
-		publish(client, QOS, atoi(argv[3]));
+		publish(client, QOS, atoi(argv[3]), atoi(argv[4]));
 	}
 	else
 	{
