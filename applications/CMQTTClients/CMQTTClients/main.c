@@ -2,10 +2,10 @@
 #include "stdlib.h"
 #include "string.h"
 #include <windows.h>
-#include "paho.mqtt.c/include/MQTTClient.h"
+#include "mqtt/include/MQTTClient.h"
 
-#define ADDRESS     "tcp://192.168.178.37:1883"
-#define TOPIC       "MQTT Examples"
+#define ADDRESS     "tcp://localhost:1883"
+#define TOPIC       "/home/temperature"
 #define QOS         0
 #define TIMEOUT     10000L
 
@@ -69,17 +69,16 @@
 
 void publish(MQTTClient* client, int qos, int payloadLen, int delay)
 {
+	MQTTClient_deliveryToken token;
+	MQTTClient_message pubmsg = MQTTClient_message_initializer;
+
+	void* mem = malloc(payloadLen);
+	pubmsg.payload = mem;
+	pubmsg.payloadlen = payloadLen;
+	pubmsg.qos = qos;
+	pubmsg.retained = 0;
 	while (1)
 	{
-		MQTTClient_deliveryToken token;
-		MQTTClient_message pubmsg = MQTTClient_message_initializer;
-
-		void* mem = malloc(payloadLen);
-		pubmsg.payload = mem;
-		pubmsg.payloadlen = payloadLen;
-		pubmsg.qos = qos;
-		pubmsg.retained = 0;
-
 		int rc = MQTTClient_publishMessage(client, TOPIC, &pubmsg, &token);
 		if (rc < 0)
 		{
@@ -95,10 +94,10 @@ void publish(MQTTClient* client, int qos, int payloadLen, int delay)
 			}
 		}
 
-		free(mem);
 
 		Sleep(delay);
 	}
+	free(mem);
 }
 
 void subscribe(MQTTClient* client, int qos)
@@ -176,6 +175,7 @@ int main(int argc, char* argv[])
 
 	if (publisher)
 	{
+		printf(argv[4]);
 		publish(client, QOS, atoi(argv[3]), atoi(argv[4]));
 	}
 	else

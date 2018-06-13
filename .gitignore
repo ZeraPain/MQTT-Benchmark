@@ -38,6 +38,7 @@ build-*
 *~lock.*.odt#
 /.vs
 /applications/MeasurementTool/.vs/MeasurementTool/v15
+/applications/MeasurementTool/x64
 /applications/MeasurementTool/Debug
 *.log
 /applications/CSharpMQTTClients/.vs/CSharpMQTTClients/v15
@@ -50,4 +51,5 @@ build-*
 /applications/CMQTTClients/CMQTTClients/x64
 /applications/CMQTTClients/Debug
 /applications/CMQTTClients/x64
+/applications/CMQTTClients/CMQTTClients/x64
 /applications/CSharpMQTTClients/.vs/CSharpMQTTClients/DesignTimeBuild

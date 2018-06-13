@@ -6,36 +6,44 @@ namespace uPLibrary.Networking.M2Mqtt
 {
     internal class Program
     {
-        private static string MQTT_BROKER_ADDRESS = "192.168.178.37";
+        private static string MQTT_BROKER_ADDRESS = "localhost";
 
         private static void Main(string[] args)
         {
-            if (args.Length > 0) // publisher
+            if (args.Length == 2) // publisher
             {
-                Publisher();
+                Publisher(args);
             }
-            else
+            else if(args.Length == 0)
             {
                 Subscriber();
+            } else
+            {
+                Console.WriteLine("Parameters: size, interval");
             }
         }
 
-        private static void Publisher()
+        private static void Publisher(string[] args)
         {
             Console.WriteLine("Started Publisher");
 
+            int size = Int32.Parse(args[0]);
+            int interval = Int32.Parse(args[1]);
             // create client instance 
             var client = new MqttClient(MQTT_BROKER_ADDRESS); 
  
             var clientId = Guid.NewGuid().ToString(); 
             client.Connect(clientId);
-
+            var sendBytes = new byte[size];
+            for(int i = 0; i < size; ++i)
+            {
+                sendBytes[i] = 1;
+            }
             // publish a message on "/home/temperature" topic with QoS 2 
             while (true)
             {
-                var sendBytes = new byte[100000];
                 client.Publish("/home/temperature", sendBytes, MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
-                Thread.Sleep(10);
+                Thread.Sleep(interval);
             }
         }
 
@@ -59,7 +67,7 @@ namespace uPLibrary.Networking.M2Mqtt
         private static void client_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e) 
         { 
             // handle message received 
-            //Console.WriteLine("Received message");
+            // Console.WriteLine("Received message");
         } 
     }
 }

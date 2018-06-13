@@ -47,7 +47,7 @@ void Subscriber::printMessage(const QByteArray &message, const QMqttTopicName &t
 //            + QLatin1String(" Message: ")
 //            + message
 //            + QLatin1Char('\n');
-    qDebug() << m_name << "message received" << message.size();
+//    qDebug() << m_name << "message received" << message.size();
 }
 
 void Subscriber::stateChanged(QMqttClient::ClientState state)
@@ -56,7 +56,7 @@ void Subscriber::stateChanged(QMqttClient::ClientState state)
     switch (state) {
     case QMqttClient::ClientState::Connected:
         qDebug() << m_name << "connected";
-        listenToTopic("test");
+        listenToTopic("/home/temperature");
         break;
     case QMqttClient::ClientState::Connecting:
         qDebug() << m_name << "connecting";
