@@ -30,6 +30,36 @@ Publisher::Publisher(const QString &name, QObject *parent)
     m_client->connectToHost();
 }
 
+Publisher::Publisher(const QString &name, qint32 messageSize, qint32 timeout, QObject *parent)
+    : QObject{parent}
+    , m_client(new QMqttClient{this})
+    , m_publishTimer{}
+    , m_messageSize{messageSize}
+    , m_publishTimeout{timeout}
+    , m_publishCounter{0}
+    , m_name{name}
+{
+    m_publishTimer.setSingleShot(true);
+    m_client->setHostname("localhost");
+    m_client->setPort(1883);
+    m_data.resize(m_messageSize);
+    m_data.fill('c');
+
+    connect(m_client.data(), &QMqttClient::stateChanged, this, &Publisher::stateChanged);
+    connect(m_client.data(), &QMqttClient::errorChanged, this, &Publisher::errorChanged);
+    connect(m_client.data(), &QMqttClient::pingResponseReceived, this, [this]() {
+        const QString content = QDateTime::currentDateTime().toString()
+                + QLatin1String(" PingResponse")
+                + QLatin1Char('\n');
+        qDebug() << content;
+    });
+
+    connect(&m_publishTimer, &QTimer::timeout, this, &Publisher::sendMessage);
+    qDebug() << "Client Created";
+
+    m_client->connectToHost();
+}
+
 Publisher::~Publisher()
 {
     m_client->disconnectFromHost();
@@ -37,14 +67,7 @@ Publisher::~Publisher()
 
 void Publisher::sendMessage()
 {
-    if(calcPublish())
-        return;
-
-    QByteArray data;
-    data.resize(m_messageSize);
-    data.fill('c');
-
-    m_client->publish(QString{"test"}, data);
+    m_client->publish(QString{"/home/temperature"}, m_data);
     m_publishTimer.start(m_publishTimeout);
 }
 

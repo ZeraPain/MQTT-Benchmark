@@ -8,6 +8,7 @@ class Publisher : public QObject
     Q_OBJECT
 public:
     explicit Publisher(const QString &name, QObject *parent);
+    explicit Publisher(const QString &name, qint32 messageSize, qint32 timeout, QObject *parent);
 
     virtual ~Publisher();
 
@@ -27,6 +28,8 @@ private:
     qint32 m_publishTimeout;
     qint32 m_publishCounter;
     QString m_name;
+
+    QByteArray m_data;
 };
 
 #endif // PUBLISHER_H

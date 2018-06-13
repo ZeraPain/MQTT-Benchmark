@@ -1,22 +1,26 @@
-#include <QCoreApplication>
-#include <QDebug>
-
 #include "publisher.h"
 #include "subscriber.h"
+
+#include <QCoreApplication>
+#include <QDebug>
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a{argc, argv};
 
-    Subscriber *sub1 = new Subscriber("Sub1", &a);
-    Subscriber *sub2 = new Subscriber("Sub2", &a);
-    Q_UNUSED(sub1)
-    Q_UNUSED(sub2)
+    if(argc == 1){
+        Subscriber *sub = new Subscriber("Sub", &a);
+        Q_UNUSED(sub);
+    } else if(argc == 3){
+        qint32 messageSize = atoi(argv[1]);
+        qint32 timeout = atoi(argv[2]);
 
-    Publisher *pub1 = new Publisher{"Pub1", &a};
-    Publisher *pub2 = new Publisher{"Pub2", &a};
-    Q_UNUSED(pub1)
-    Q_UNUSED(pub2)
+        Publisher *pub = new Publisher("Pub", messageSize, timeout, &a);
+        Q_UNUSED(pub);
+    } else {
+        qDebug() << "Wrong parameter number (msgsize, intervall)";
+        return 0;
+    }
 
     return a.exec();
 }

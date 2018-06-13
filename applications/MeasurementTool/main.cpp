@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
 	// program code
 	int processId;
 
-	std::cout << "Searching for process... ";
+	std::cout << "Searching for process... " << std::endl;
 
 	do
 	{
@@ -107,6 +107,8 @@ int main(int argc, char* argv[])
 
 	DWORD exitCode;
 
+	time_t start = time(NULL);
+
 	std::cout << "Printing resource values of [" << processName << "] PID: " << processId << std::endl;
 	do
 	{
@@ -136,7 +138,7 @@ int main(int argc, char* argv[])
 		GetExitCodeProcess(processHandle, &exitCode);
 		std::cout << "CPU: " << percent << "% \t RAM: " << virtualMemUsedByMe / 1024 / 1024 << "MB" << std::endl;
 		writeLogFile(processName, percent, virtualMemUsedByMe);
-	} while (STILL_ACTIVE == exitCode);
+	} while (STILL_ACTIVE == exitCode && time(NULL) <= start+60*2);
 
 	CloseHandle(processHandle);
 
