@@ -14,6 +14,7 @@
 # Compiled Dynamic libraries
 *.so
 *.dylib
+*.dll
 
 # Fortran module files
 *.mod
@@ -23,6 +24,7 @@
 *.lai
 *.la
 *.a
+*.lib
 
 # Executables
 *.exe
@@ -38,7 +40,6 @@ build-*
 /applications/MeasurementTool/.vs/MeasurementTool/v15
 /applications/MeasurementTool/x64
 /applications/MeasurementTool/Debug
-*.log
 /applications/CSharpMQTTClients/.vs/CSharpMQTTClients/v15
 /applications/CSharpMQTTClients/CSharpMQTTClients/obj/Debug
 /applications/CSharpMQTTClients/bin/Debug
