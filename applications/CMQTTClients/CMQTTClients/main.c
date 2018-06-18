@@ -9,64 +9,6 @@
 #define QOS         0
 #define TIMEOUT     10000L
 
-/*void test1_sendAndReceive(MQTTClient* c, int qos, char* test_topic)
-{
-	MQTTClient_deliveryToken dt;
-	MQTTClient_message pubmsg = MQTTClient_message_initializer;
-	MQTTClient_message* m = NULL;
-	char* topicName = NULL;
-	int topicLen;
-	const int iterations = 50;
-	int failures = 0;
-
-	printf("%d messages at QoS %d\n", iterations, qos);
-	pubmsg.payload = "a much longer message that we can shorten to the extent that we need to payload up to 11";
-	pubmsg.payloadlen = 11;
-	pubmsg.qos = qos;
-	pubmsg.retained = 0;
-
-	int rc = MQTTClient_subscribe(c, test_topic, qos);
-
-	for (int i = 0; i< iterations; ++i)
-	{
-		if (i % 10 == 0)
-			rc = MQTTClient_publish(c, test_topic, pubmsg.payloadlen, pubmsg.payload, pubmsg.qos, pubmsg.retained, &dt);
-		else
-			rc = MQTTClient_publishMessage(c, test_topic, &pubmsg, &dt);
-
-		if (qos > 0)
-		{
-			rc = MQTTClient_waitForCompletion(c, dt, 5000L);
-		}
-
-		rc = MQTTClient_receive(c, &topicName, &topicLen, &m, 5000);
-		if (topicName)
-		{
-			printf("Message received on topic %s is %.*s\n", topicName, m->payloadlen, (char*)(m->payload));
-			if (pubmsg.payloadlen != m->payloadlen ||
-				memcmp(m->payload, pubmsg.payload, m->payloadlen) != 0)
-			{
-				failures++;
-				printf("Error: wrong data - received lengths %d %d\n", pubmsg.payloadlen, m->payloadlen);
-				break;
-			}
-			MQTTClient_free(topicName);
-			MQTTClient_freeMessage(&m);
-		}
-		else
-			printf("No message received within timeout period\n");
-	}
-
-	MQTTClient_receive(c, &topicName, &topicLen, &m, 2000);
-	while (topicName)
-	{
-		printf("Message received on topic %s is %.*s.\n", topicName, m->payloadlen, (char*)(m->payload));
-		MQTTClient_free(topicName);
-		MQTTClient_freeMessage(&m);
-		MQTTClient_receive(c, &topicName, &topicLen, &m, 2000);
-	}
-}*/
-
 void publish(MQTTClient* client, int qos, int payloadLen, int delay)
 {
 	MQTTClient_deliveryToken token;
