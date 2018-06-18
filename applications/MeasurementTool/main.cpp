@@ -5,6 +5,14 @@
 #include <iostream>
 #include <fstream>
 #include <ctime>
+#include <vector>
+
+struct log_struct
+{
+	int		logID;
+	double	cpuPercent;
+	SIZE_T	ramUsage;
+};
 
 DWORD getProcessId(const std::string& aProcessName)
 {
@@ -46,14 +54,27 @@ std::string getTimeStamp()
 	return std::string(buffer);
 }
 
-void writeLogFile(const std::string& aProcessName, double aCpuPercentage, size_t aRamValue)
+struct Comma final : std::numpunct<char>
+{
+	char do_decimal_point() const override { return ','; }
+};
+
+void writeLogFile(const std::string& aProcessName, const std::vector<log_struct>& aLogVector)
 {
 	std::ofstream fileStream;
-	if (!fileStream.is_open())
+	fileStream.open(aProcessName + ".txt");
+
+	fileStream.imbue(std::locale(std::locale::classic(), new Comma));
+
+	for (auto& log : aLogVector)
 	{
-		fileStream.open(aProcessName + ".log", std::ios_base::app);
+		fileStream 
+			<< log.logID << "\t" 
+			<< log.cpuPercent << "\t" 
+			<< std::to_string(log.ramUsage) << "\n";
 	}
-	fileStream << getTimeStamp() << ";" << aCpuPercentage << ";" << aRamValue << "\n";
+
+	fileStream.close();
 }
 
 int main(int argc, char* argv[])
@@ -69,7 +90,7 @@ int main(int argc, char* argv[])
 
 	// user defined values
 	const std::string processName = argv[1];
-	const auto measureInterval = atoi(argv[2]);
+	const auto measureMax = atoi(argv[2]);
 
 	// program code
 	int processId;
@@ -105,14 +126,15 @@ int main(int argc, char* argv[])
 	memcpy(&lastSysCPU, &fsys, sizeof(FILETIME));
 	memcpy(&lastUserCPU, &fuser, sizeof(FILETIME));
 
+	std::cout << "Printing resource values of [" << processName << "] PID: " << processId << std::endl;
+	std::vector<log_struct> logger;
+
+	int logIndex = 0;
 	DWORD exitCode;
 
-	time_t start = time(NULL);
-
-	std::cout << "Printing resource values of [" << processName << "] PID: " << processId << std::endl;
 	do
 	{
-		Sleep(measureInterval);
+		Sleep(1000);
 
 		GetProcessMemoryInfo(processHandle, reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc), sizeof(pmc));
 		const auto virtualMemUsedByMe = pmc.PrivateUsage;
@@ -126,8 +148,8 @@ int main(int argc, char* argv[])
 		GetProcessTimes(processHandle, &ftime, &ftime, &fsys, &fuser);
 		memcpy(&sys, &fsys, sizeof(FILETIME));
 		memcpy(&user, &fuser, sizeof(FILETIME));
-		double percent = (sys.QuadPart - lastSysCPU.QuadPart) +
-			(user.QuadPart - lastUserCPU.QuadPart);
+		double percent = (double)((sys.QuadPart - lastSysCPU.QuadPart) +
+			(user.QuadPart - lastUserCPU.QuadPart));
 		percent /= (now.QuadPart - lastCPU.QuadPart);
 		percent /= numProcessors;
 		percent *= 100;
@@ -136,14 +158,18 @@ int main(int argc, char* argv[])
 		lastSysCPU = sys;
 
 		GetExitCodeProcess(processHandle, &exitCode);
-		std::cout << "CPU: " << percent << "% \t RAM: " << virtualMemUsedByMe / 1024 / 1024 << "MB" << std::endl;
-		writeLogFile(processName, percent, virtualMemUsedByMe);
-	} while (STILL_ACTIVE == exitCode && time(NULL) <= start+60*2);
+		++logIndex;
+		std::cout << "[" << logIndex << "/" << measureMax << "]\t"
+			<< " CPU: " << percent << "% \t RAM: " << virtualMemUsedByMe / 1024 / 1024 << "MB" << std::endl;
+		logger.push_back({ logIndex , percent , virtualMemUsedByMe });
 
-	CloseHandle(processHandle);
+	} while (STILL_ACTIVE == exitCode && logIndex < measureMax);
 
 	std::cout << "Process terminated! Stopping measurements." << std::endl;
-	system("PAUSE");
+	CloseHandle(processHandle);
+
+	std::cout << "Storing results to [" << processName  << ".txt]" << std::endl;
+	writeLogFile(processName, logger);
 
 	return 0;
 }
