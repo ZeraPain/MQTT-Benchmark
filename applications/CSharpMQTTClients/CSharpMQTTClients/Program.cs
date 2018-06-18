@@ -6,7 +6,7 @@ namespace uPLibrary.Networking.M2Mqtt
 {
     internal class Program
     {
-        private static string MQTT_BROKER_ADDRESS = "localhost";
+        private static string MQTT_BROKER_ADDRESS = "127.0.0.1";
 
         private static void Main(string[] args)
         {
